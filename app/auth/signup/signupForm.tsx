@@ -1,0 +1,135 @@
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import axios from "axios";
+
+const formSchema = z.object({
+  name: z.string().min(4, {
+    message: "Yêu cầu nhập tên ít nhất 4 ký tự!",
+  }),
+  email: z.string().email({
+    message: "Email không hợp lệ !",
+  }),
+  password: z
+    .string()
+    .min(6, {
+      message: "Yêu cầu nhập tên ít nhất 6 ký tự!",
+    })
+    .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[0-9]).{6,20}$/, {
+      message: "Mật khẩu yêu cầu [a-z] và [0-9] ít nhất 6 ký tự!",
+    }),
+});
+
+export type SignUpFormalues = z.infer<typeof formSchema>;
+
+export default function RegisterForm() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const form = useForm<SignUpFormalues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: "",
+      password: "",
+      email: "",
+    },
+  });
+
+  const onSubmit = async (data: SignUpFormalues) => {
+    try {
+      setLoading(true);
+      if (data) {
+        setError(null); // Clear any existing errors before the request
+        await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/signup`, {
+          name: data.name,
+          email: data.email,
+          password: data.password,
+        });
+      }
+      router.push("/auth/signin");
+    } catch (err) {
+      if (axios.isAxiosError(err)) {
+        const errorMessage = err.response?.data?.message || "Có lỗi xảy ra!";
+        setError(errorMessage);
+      } else {
+        setError("Có lỗi xảy ra!");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full">
+        <div className="flex flex-col gap-2">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Name</FormLabel>
+                <FormControl>
+                  <Input placeholder="Nguyen Xuan Truong" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Email</FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="truong@gmail.com"
+                    {...field}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>password</FormLabel>
+                <FormControl>
+                  <Input type="password" placeholder="**********" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="space-y-2">
+          {error && <div className="text-red-500 text-sm">{error}</div>}
+          <Button disabled={loading} className="w-full" type="submit">
+            {loading ? "Loading..." : "Sign up"}
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
