@@ -1,0 +1,61 @@
+"use client";
+
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useState } from "react";
+import FormSuccess from "@/components/form-notification/form-success";
+import FormError from "@/components/form-notification/form-error";
+import { Loader2 } from "lucide-react";
+import axios from "axios";
+
+const NewVerificationForm = () => {
+  const [error, setError] = useState<string | undefined>();
+  const [success, setSuccess] = useState<string | undefined>();
+  const searchParams = useSearchParams();
+  //get token bên mail.ts
+  const token = searchParams.get("token");
+
+  // useCallback trong React được sử dụng để ghi nhớ một hàm, đảm bảo rằng tham chiếu hàm sẽ không thay đổi
+  // qua các lần render trừ khi các phụ thuộc của nó thay đổi. Điều này hữu
+  // ích khi tránh việc tạo lại hàm không cần thiết, đặc biệt là khi hàm đó được truyền qua các props đến
+  // các component con hoặc được sử dụng trong mảng phụ thuộc của các hook khác như useEffect.
+  const onSubmit = useCallback(async () => {
+    if (success || error) return;
+
+    if (!token) {
+      setError("Không tìm thấy token!");
+      return;
+    }
+
+    try {
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/verificationAccount`,
+        { token }
+      );
+
+      // Check if the response contains an error
+      if (response.data.error) {
+        setError(response.data.error);
+      } else if (response.data.success) {
+        setSuccess(response.data.success);
+      }
+    } catch (err) {
+      setError("Đã có lỗi xảy ra!");
+    }
+  }, [token, success, error]);
+
+  useEffect(() => {
+    onSubmit();
+  }, [onSubmit]);
+
+  return (
+    <div className="flex items-center w-full justify-center">
+      {!success && !error && (
+        <Loader2 className="animate-spin text-[#66b0de]" />
+      )}
+      {success && <FormSuccess content={success} />}
+      {!success && error && <FormError content={error} />}
+    </div>
+  );
+};
+
+export default NewVerificationForm;

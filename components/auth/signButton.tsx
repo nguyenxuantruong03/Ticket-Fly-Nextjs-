@@ -20,26 +20,32 @@ const SignButton = () => {
   }, []);
 
   const handleLogout = async () => {
-    await fetch("/api/auth/signout", { method: "GET" });
+    await fetch("/api/auth/logout", { method: "GET" });
     setSession(null); // Cập nhật trạng thái session trên client
   };
 
-  const signinUrl = pathname
-    ? `/auth/signin?redirect=${encodeURIComponent(pathname)}`
-    : `/auth/signin`;
+  const loginUrl = pathname
+    ? `/auth/login?redirect=${encodeURIComponent(pathname)}`
+    : `/auth/login`;
 
   return (
     <div className="flex items-center gap-2 ml-auto">
       {!session || !session.user ? (
         <>
-          <Link href={signinUrl}>
-            <Button className="dark:text-slate-200 text-salte-900" variant="link">
-              Sign in
+          <Link href={loginUrl}>
+            <Button
+              className="dark:text-slate-200 text-salte-900"
+              variant="link"
+            >
+              Login
             </Button>
           </Link>
-          <Link href="/auth/signup">
-            <Button className="dark:text-slate-200 text-salte-900" variant="link">
-              Sign up
+          <Link href="/auth/register">
+            <Button
+              className="dark:text-slate-200 text-salte-900"
+              variant="link"
+            >
+              Register
             </Button>
           </Link>
         </>
@@ -51,7 +57,7 @@ const SignButton = () => {
             variant="link"
             onClick={handleLogout}
           >
-            Sign out
+            Logout
           </Button>
         </>
       )}

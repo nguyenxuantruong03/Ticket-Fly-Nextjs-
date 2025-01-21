@@ -15,8 +15,9 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import axios from "axios";
+import FormError from "@/components/form-notification/form-error";
+import FormSuccess from "@/components/form-notification/form-success";
 
 const formSchema = z.object({
   name: z.string().min(4, {
@@ -35,14 +36,14 @@ const formSchema = z.object({
     }),
 });
 
-export type SignUpFormalues = z.infer<typeof formSchema>;
+export type RegisterFormalues = z.infer<typeof formSchema>;
 
 export default function RegisterForm() {
-  const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | undefined>();
 
-  const form = useForm<SignUpFormalues>({
+  const form = useForm<RegisterFormalues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: "",
@@ -51,18 +52,28 @@ export default function RegisterForm() {
     },
   });
 
-  const onSubmit = async (data: SignUpFormalues) => {
+  const onSubmit = async (data: RegisterFormalues) => {
     try {
       setLoading(true);
+      setSuccess("");
+      setError("");
       if (data) {
         setError(null); // Clear any existing errors before the request
-        await axios.post(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/signup`, {
-          name: data.name,
-          email: data.email,
-          password: data.password,
-        });
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`,
+          {
+            name: data.name,
+            email: data.email,
+            password: data.password,
+          }
+        );
+
+        if (response.data.error) {
+          setError(response.data.error);
+        } else if (response.data.success) {
+          setSuccess(response.data.success);
+        }
       }
-      router.push("/auth/signin");
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const errorMessage = err.response?.data?.message || "Có lỗi xảy ra!";
@@ -114,7 +125,7 @@ export default function RegisterForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>password</FormLabel>
+                <FormLabel>Password</FormLabel>
                 <FormControl>
                   <Input type="password" placeholder="**********" {...field} />
                 </FormControl>
@@ -124,9 +135,10 @@ export default function RegisterForm() {
           />
         </div>
         <div className="space-y-2">
-          {error && <div className="text-red-500 text-sm">{error}</div>}
+          {error && <FormError content={error} />}
+          {success && <FormSuccess content={success} />}
           <Button disabled={loading} className="w-full" type="submit">
-            {loading ? "Loading..." : "Sign up"}
+            {loading ? "Loading..." : "Register"}
           </Button>
         </div>
       </form>

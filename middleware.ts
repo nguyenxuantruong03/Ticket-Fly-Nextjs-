@@ -6,7 +6,7 @@ export default async function middleware(req: NextRequest) {
 
   // Nếu chưa có session, điều hướng đến trang đăng nhập với truy vấn redirect
   if (!session || !session.user) {
-    const redirectUrl = new URL("/auth/signin", req.nextUrl);
+    const redirectUrl = new URL("/auth/login", req.nextUrl);
     redirectUrl.searchParams.set("redirect", req.nextUrl.pathname); // Thêm ?redirect=/profile
     return NextResponse.redirect(redirectUrl);
   }

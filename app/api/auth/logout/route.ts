@@ -4,7 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(req: NextRequest) {
   const response = await authFetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/signout`,
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`,
     {
       method: "POST",
     }
@@ -13,8 +13,6 @@ export async function GET(req: NextRequest) {
   if (response.ok) {
     await deleteSession();
   }
-
-  console.log("req.nextUrl", req.nextUrl);
 
   return NextResponse.redirect(new URL("/", req.nextUrl));
 }
