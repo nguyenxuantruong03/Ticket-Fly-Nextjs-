@@ -59,32 +59,31 @@ export default function LoginForm() {
   const [warning, setWarning] = useState<JSX.Element | string | null>(null);
 
   const redirect = searchParams.get("redirect") || "/"; // Lấy giá trị `redirect` từ URL hoặc mặc định là "/"
-  
+
   // Lấy errorGooglebanUntil để thay đổi thành t/g và dùng formatDistanceToNow để phải tải thư viện date-fns bên back-end
   const errorGooglebanUntil = searchParams.get("errorGooglebanUntil") || "";
 
   //Logic này sẽ chạy khi errorGooglebanUntil thay đổi
   useEffect(() => {
     if (errorGooglebanUntil !== "") {
-        // Giải mã chuỗi ngày từ URL
-        const decodedDate = decodeURIComponent(errorGooglebanUntil);
-  
-        // Chuyển đổi chuỗi ngày thành đối tượng Date
-        const parsedDate = new Date(decodedDate);
-  
-        if (!isNaN(parsedDate.getTime())) {
-          // Nếu `parsedDate` hợp lệ
-          const formattedDate = formatDistanceToNow(parsedDate, {
-            locale: vi,
-            addSuffix: true,
-          });
-          setHint(
-            `Tài khoản của bạn đã bị khóa. Hãy quay lại vào ${formattedDate}.`
-          );
-        } 
+      // Giải mã chuỗi ngày từ URL
+      const decodedDate = decodeURIComponent(errorGooglebanUntil);
+
+      // Chuyển đổi chuỗi ngày thành đối tượng Date
+      const parsedDate = new Date(decodedDate);
+
+      if (!isNaN(parsedDate.getTime())) {
+        // Nếu `parsedDate` hợp lệ
+        const formattedDate = formatDistanceToNow(parsedDate, {
+          locale: vi,
+          addSuffix: true,
+        });
+        setHint(
+          `Tài khoản của bạn đã bị khóa. Hãy quay lại vào ${formattedDate}.`
+        );
+      }
     }
   }, [errorGooglebanUntil]);
-  
 
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(formSchema),
@@ -154,11 +153,11 @@ export default function LoginForm() {
       router.push(redirect);
     } catch (err) {
       if (axios.isAxiosError(err)) {
-        const { countResendEmailVerify, emailNotVerified, timeUnBan, message } = err.response?.data || {};
+        const { countResendEmailVerify, emailNotVerified, timeUnBan, message } =
+          err.response?.data || {};
 
         // Kiểm tra nếu bên kia có trả throw error return {countResendEmailVerify:...} thì lọt vào đây
-        if (countResendEmailVerify || emailNotVerified
-        ) {
+        if (countResendEmailVerify || emailNotVerified) {
           // ------------Tạo ra một hint để hiển thị thông báo gửi lại email xác thực--------------
           const hintSentVerificationEmail = EmailNotVerifiedCatch({
             err,
@@ -168,9 +167,6 @@ export default function LoginForm() {
           setHint(hintSentVerificationEmail);
 
           // -----------Lấy số lần gửi lại email xác thực----------
-          const countResendEmailVerify = CountResendEmailVerifyCatch({
-            err,
-          }).countResendEmailVerify;
           const warningReSentVerificationEmail = CountResendEmailVerifyCatch({
             err,
           }).warningReSentVerificationEmail;
@@ -236,7 +232,7 @@ export default function LoginForm() {
               </FormItem>
             )}
           />
-          <Link className="underline text-xs" href="#">
+          <Link className="underline text-xs" href="/auth/forgot-password">
             Forgot your password?
           </Link>
         </div>

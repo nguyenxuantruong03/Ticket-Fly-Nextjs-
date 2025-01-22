@@ -37,24 +37,15 @@ export const EmailNotVerifiedCatch = ({
   return hintSentVerificationEmail;
 };
 
-
-
-
-
-
-
-
-interface ErrorResponseCountResendEmailVerifyProps {
+interface ErrorResponseCountResendEmailProps {
   countResendEmailVerify?: number;
 }
 
-interface CountResendEmailVerifyProps {
-  err: AxiosError<ErrorResponseCountResendEmailVerifyProps>;
+interface CountResendEmailProps {
+  err: AxiosError<ErrorResponseCountResendEmailProps>;
 }
 
-export const CountResendEmailVerifyCatch = ({
-  err,
-}: CountResendEmailVerifyProps) => {
+export const CountResendEmailVerifyCatch = ({ err }: CountResendEmailProps) => {
   // Lấy số lần gửi lại email xác thực
   const countResendEmailVerify = err.response?.data?.countResendEmailVerify;
 
@@ -65,28 +56,21 @@ export const CountResendEmailVerifyCatch = ({
       <span className="text-[#713f12] font-bold mx-1">
         {countResendEmailVerify}
       </span>
-      lần . Nếu bạn gửi quá 5 lần, tài khoản của bạn sẽ bị khóa trong 7 ngày.
-      Hãy cẩn thận và đảm bảo không gửi quá nhiều yêu cầu.
+      lần. Nếu bạn gửi quá 5 lần, tài khoản của bạn sẽ bị khóa trong 7 ngày. Hãy
+      cẩn thận và đảm bảo không gửi quá nhiều yêu cầu. Chúng tôi thấy có dấu
+      hiệu spam từ tài khoản của bạn.
     </>
   );
   return {
     warningReSentVerificationEmail: warningReSentVerificationEmail,
-    countResendEmailVerify: countResendEmailVerify,
   };
 };
 
+interface TimeUnBanCatchProps {
+  formattedDate: string;
+}
 
-
-
-
-
-
-  interface TimeUnBanCatchProps {
-    formattedDate: string;
-  }
-
-export const TimeUnBanCatch = ({formattedDate}:TimeUnBanCatchProps) => {
-
+export const TimeUnBanCatch = ({ formattedDate }: TimeUnBanCatchProps) => {
   const hintBanned = (
     <>
       Tài khoản của bạn đã bị khóa. Hãy quay lại vào

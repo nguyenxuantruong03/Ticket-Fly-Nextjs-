@@ -70,8 +70,6 @@ export default function RegisterForm() {
 
         if (response.data.error) {
           setError(response.data.error);
-        } else if (response.data.success) {
-          setSuccess(response.data.success);
         }
       }
     } catch (err) {
