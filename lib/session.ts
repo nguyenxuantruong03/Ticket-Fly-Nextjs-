@@ -10,6 +10,7 @@ export type Session = {
     id: string;
     name: string;
     role: Role;
+    isTwoFactorEnabled?: boolean;
   };
   accessToken: string;
   refreshToken: string;

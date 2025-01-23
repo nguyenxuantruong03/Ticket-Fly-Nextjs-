@@ -13,9 +13,9 @@ const Social = () => {
       <Button
         variant="outline"
         size="icon"
-        className="flex items-center justify-center w-full"
+        className="bg-white border w-full mt-5 flex justify-center items-center text-sm hover:scale-105 duration-300 text-[#002D74]"
       >
-        <GoogleSVG />
+        <GoogleSVG />  Login with Google
       </Button>
     </Link>
   );

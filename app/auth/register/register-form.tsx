@@ -95,7 +95,7 @@ export default function RegisterForm() {
               <FormItem>
                 <FormLabel>Name</FormLabel>
                 <FormControl>
-                  <Input placeholder="Nguyen Xuan Truong" {...field} />
+                  <Input placeholder="Nguyen Xuan Truong" {...field} disabled={loading}/>
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -112,6 +112,7 @@ export default function RegisterForm() {
                     type="email"
                     placeholder="truong@gmail.com"
                     {...field}
+                    disabled={loading}
                   />
                 </FormControl>
                 <FormMessage />
@@ -135,7 +136,7 @@ export default function RegisterForm() {
         <div className="space-y-2">
           {error && <FormError content={error} />}
           {success && <FormSuccess content={success} />}
-          <Button disabled={loading} className="w-full" type="submit">
+          <Button disabled={loading} className="w-full bg-[#002D74] hover:bg-[#04204a] hover:scale-110 duration-300" type="submit">
             {loading ? "Loading..." : "Register"}
           </Button>
         </div>

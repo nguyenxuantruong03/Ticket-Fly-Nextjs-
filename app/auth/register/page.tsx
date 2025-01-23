@@ -1,9 +1,10 @@
 import RegisterForm from "./register-form";
-import CardWrapper from "@/components/auth/card/card-wrapper";
+import CardWrapper  from '@/components/auth/card/card-wrapper';
 
 const RegisterPage = () => {
   return (
     <CardWrapper
+      type="Register"
       headerLabel="Create an account!"
       backButtonHref="/auth/login"
       backButtonLabel="Already have an account?"

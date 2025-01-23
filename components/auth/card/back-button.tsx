@@ -12,24 +12,22 @@ interface BackButtonProps {
 
 const BackButton: React.FC<BackButtonProps> = ({ href, label, iconRight }) => {
   return (
-    <Button variant="link" className="font-nomal w-full gap-0" size="sm" asChild>
-      <Link
-        href={href}
-        className="flex items-center hover:no-underline group"
-      >
+    <Button
+      variant="link"
+      className="flex items justify-start px-0 font-nomal w-full gap-0"
+      size="sm"
+      asChild
+    >
+      <Link href={href} className="hover:no-underline group ">
+        <span className="flex group-hover:border-b-[1px] group-hover:border-slate-900 text-[#002D74]">
         {!iconRight && (
-          <span className="group-hover:border-b-[1px] group-hover:border-slate-900">
-            <ArrowLeft className="h-3 w-3 " />
-          </span>
+            <ArrowLeft className={`h-3 w-3 ${!iconRight && "mr-1"}`} />
         )}
-        <span className="group-hover:border-b-[1px] group-hover:border-slate-900">
-          {label}
-        </span>
+          {label} 
         {iconRight && (
-          <span className="group-hover:border-b-[1px] group-hover:border-slate-900">
-            <ArrowRight className="h-3 w-3 " />
-          </span>
+            <ArrowRight className={`h-3 w-3 ${iconRight && "ml-1"}`} />
         )}
+        </span>
       </Link>
     </Button>
   );

@@ -62,8 +62,8 @@ const NewPasswordForm = () => {
         const { message } = err.response?.data || {};
         setError(message || "Đã có lỗi xảy ra, vui lòng thử lại sau");
       }
-    }finally{
-      setLoading(false)
+    } finally {
+      setLoading(false);
     }
   };
   return (
@@ -95,7 +95,11 @@ const NewPasswordForm = () => {
           {success && <FormSuccess content={success} />}
         </div>
 
-        <Button className="w-full" type="submit" disabled={loading}>
+        <Button
+          className="w-full bg-[#002D74] hover:bg-[#04204a] hover:scale-110 duration-300"
+          type="submit"
+          disabled={loading}
+        >
           Thay đổi mật khẩu
         </Button>
       </form>

@@ -39,7 +39,14 @@ const NewVerificationForm = () => {
         setSuccess(response.data.success);
       }
     } catch (err) {
-      setError("Đã có lỗi xảy ra!");
+      if (axios.isAxiosError(err)) {
+        const { message } = err.response?.data || {};
+        if (message) {
+          // Kiểm tra nếu bên kia có trả throw error return {message:...} thì lọt vào đây
+          const errorMessage = message || "Có lỗi xảy ra!";
+          setError(errorMessage);
+        }
+      }
     }
   }, [token, success, error]);
 

@@ -17,7 +17,6 @@ import { Input } from "@/components/ui/input";
 import { JSX, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import axios from "axios";
-import Link from "next/link";
 import { createSession } from "@/lib/session";
 import FormError from "@/components/form-notification/form-error";
 import FormHint from "@/components/form-notification/form-hint";
@@ -119,35 +118,38 @@ export default function LoginForm() {
   };
 
   const onSubmit = async (data: LoginFormValues) => {
+    setLoading(true);
+    setHint("");
+    setError("");
+    setWarning("");
+    setSuccess("");
     try {
-      setLoading(true);
-      setHint("");
-      setError("");
-      setWarning("");
-      setSuccess("");
-      if (data) {
-        setError(null); // Clear any existing errors before the request
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
-          {
-            email: data.email,
-            password: data.password,
-          }
-        );
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
+        {
+          email: data.email,
+          password: data.password,
+        }
+      );
 
-        //Create the ssion for auth user
-        const result = response.data;
+      const result = response.data;
 
-        await createSession({
-          user: {
-            id: result.id,
-            name: result.name,
-            role: result.role,
-          },
-          accessToken: result.accessToken,
-          refreshToken: result.refreshToken,
-        });
+      // Kiểm tra nếu tài khoản có bật 2FA thì điều hướng đến trang 2FA + email
+      if (result.isTwoFactorEnabled) {
+        return router.push(`/auth/two-factor?email=${data.email}`);
       }
+
+      //Create the session for auth user
+      await createSession({
+        user: {
+          id: result.id,
+          name: result.name,
+          role: result.role,
+          isTwoFactorEnabled: result.isTwoFactorEnabled,
+        },
+        accessToken: result.accessToken,
+        refreshToken: result.refreshToken,
+      });
 
       // Điều hướng đến trang redirect hoặc trang mặc định
       router.push(redirect);
@@ -207,12 +209,13 @@ export default function LoginForm() {
             name="email"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel className="text-[#002D74]">Email</FormLabel>
                 <FormControl>
                   <Input
                     type="email"
                     placeholder="truong@gmail.com"
                     {...field}
+                    disabled={loading}
                   />
                 </FormControl>
                 <FormMessage />
@@ -224,24 +227,30 @@ export default function LoginForm() {
             name="password"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Password</FormLabel>
+                <FormLabel className="text-[#002D74]">Password</FormLabel>
                 <FormControl>
-                  <Input type="password" placeholder="**********" {...field} />
+                  <Input
+                    type="password"
+                    placeholder="**********"
+                    {...field}
+                    disabled={loading}
+                  />
                 </FormControl>
                 <FormMessage />
               </FormItem>
             )}
           />
-          <Link className="underline text-xs" href="/auth/forgot-password">
-            Forgot your password?
-          </Link>
         </div>
         <div className="space-y-2">
           {warning && <FormWarning content={warning} />}
           {hint && <FormHint content={hint} />}
           {error && <FormError content={error} />}
           {success && <FormSuccess content={success} />}
-          <Button disabled={loading} className="w-full" type="submit">
+          <Button
+            disabled={loading}
+            className="w-full bg-[#002D74] hover:bg-[#04204a] hover:scale-110 duration-300"
+            type="submit"
+          >
             {loading ? "Loading..." : "Login"}
           </Button>
         </div>
