@@ -18,6 +18,7 @@ import { useState } from "react";
 import axios from "axios";
 import FormError from "@/components/form-notification/form-error";
 import FormSuccess from "@/components/form-notification/form-success";
+import CardWrapper  from '@/components/auth/card/card-wrapper';
 
 const formSchema = z.object({
   name: z.string().min(4, {
@@ -85,62 +86,86 @@ export default function RegisterForm() {
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full">
-        <div className="flex flex-col gap-2">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Name</FormLabel>
-                <FormControl>
-                  <Input placeholder="Nguyen Xuan Truong" {...field} disabled={loading}/>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="truong@gmail.com"
-                    {...field}
-                    disabled={loading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Password</FormLabel>
-                <FormControl>
-                  <Input type="password" placeholder="**********" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="space-y-2">
-          {error && <FormError content={error} />}
-          {success && <FormSuccess content={success} />}
-          <Button disabled={loading} className="w-full bg-[#002D74] hover:bg-[#04204a] hover:scale-110 duration-300" type="submit">
-            {loading ? "Loading..." : "Register"}
-          </Button>
-        </div>
-      </form>
-    </Form>
+    <CardWrapper
+      type="Register"
+      headerLabel="Create an account!"
+      backButtonHref="/auth/login"
+      backButtonLabel="Already have an account?"
+      showSocial
+      loading={loading}
+    >
+      <Form {...form}>
+        <form
+          onSubmit={form.handleSubmit(onSubmit)}
+          className="space-y-8 w-full"
+        >
+          <div className="flex flex-col gap-2">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Name</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Nguyen Xuan Truong"
+                      {...field}
+                      disabled={loading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="truong@gmail.com"
+                      {...field}
+                      disabled={loading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="**********"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="space-y-2">
+            {error && <FormError content={error} />}
+            {success && <FormSuccess content={success} />}
+            <Button
+              disabled={loading}
+              className="w-full bg-[#002D74] hover:bg-[#04204a] hover:scale-110 duration-300"
+              type="submit"
+            >
+              {loading ? "Loading..." : "Register"}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </CardWrapper>
   );
 }

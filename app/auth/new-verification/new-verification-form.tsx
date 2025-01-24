@@ -6,6 +6,7 @@ import FormSuccess from "@/components/form-notification/form-success";
 import FormError from "@/components/form-notification/form-error";
 import { Loader2 } from "lucide-react";
 import axios from "axios";
+import CardWrapper from "@/components/auth/card/card-wrapper";
 
 const NewVerificationForm = () => {
   const [error, setError] = useState<string | undefined>();
@@ -55,13 +56,20 @@ const NewVerificationForm = () => {
   }, [onSubmit]);
 
   return (
-    <div className="flex items-center w-full justify-center">
-      {!success && !error && (
-        <Loader2 className="animate-spin text-[#66b0de]" />
-      )}
-      {success && <FormSuccess content={success} />}
-      {!success && error && <FormError content={error} />}
-    </div>
+    <CardWrapper
+      type="Verification Account"
+      headerLabel="Confirming your verification"
+      backButtonHref="/auth/login"
+      backButtonLabel="Back to Login"
+    >
+      <div className="flex items-center w-full justify-center">
+        {!success && !error && (
+          <Loader2 className="animate-spin text-[#66b0de]" />
+        )}
+        {success && <FormSuccess content={success} />}
+        {!success && error && <FormError content={error} />}
+      </div>
+    </CardWrapper>
   );
 };
 

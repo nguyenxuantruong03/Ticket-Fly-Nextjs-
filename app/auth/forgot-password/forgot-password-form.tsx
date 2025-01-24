@@ -22,6 +22,7 @@ import { vi } from "date-fns/locale";
 import { CountResendEmailVerifyCatch, TimeUnBanCatch } from "./catch";
 import FormHint from "@/components/form-notification/form-hint";
 import FormWarning from "@/components/form-notification/form-warning";
+import CardWrapper  from '@/components/auth/card/card-wrapper';
 
 export const ForgotPasswordSchema = z.object({
   email: z.string().email({
@@ -87,46 +88,53 @@ const ForgotPasswordForm = () => {
           setError(message || "Đã có lỗi xảy ra, vui lòng thử lại sau");
         }
       }
-    }finally{
-        setLoading(false)
-    } 
+    } finally {
+      setLoading(false);
+    }
   };
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="space-y-4">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="truong@gmail.com"
-                    {...field}
-                    disabled={loading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+    <CardWrapper
+      type="Forgot Password"
+      headerLabel="Forgot your password"
+      backButtonHref="/auth/login"
+      backButtonLabel="Back to login"
+    >
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="email"
+                      placeholder="truong@gmail.com"
+                      {...field}
+                      disabled={loading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-        <div className="space-y-2">
-          {warning && <FormWarning content={warning} />}
-          {hint && <FormHint content={hint} />}
-          {error && <FormError content={error} />}
-          {success && <FormSuccess content={success} />}
-        </div>
+          <div className="space-y-2">
+            {warning && <FormWarning content={warning} />}
+            {hint && <FormHint content={hint} />}
+            {error && <FormError content={error} />}
+            {success && <FormSuccess content={success} />}
+          </div>
 
-        <Button className="w-full" type="submit" disabled={loading}>
-          Gửi đến Email
-        </Button>
-      </form>
-    </Form>
+          <Button className="w-full" type="submit" disabled={loading}>
+            Gửi đến Email
+          </Button>
+        </form>
+      </Form>
+    </CardWrapper>
   );
 };
 

@@ -18,6 +18,7 @@ import FormError from "@/components/form-notification/form-error";
 import FormSuccess from "@/components/form-notification/form-success";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
+import CardWrapper  from "@/components/auth/card/card-wrapper";
 
 export const NewPasswordSchema = z.object({
   password: z.string().min(6, {
@@ -67,43 +68,50 @@ const NewPasswordForm = () => {
     }
   };
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <div className="space-y-4">
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>New Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="**********"
-                    {...field}
-                    disabled={loading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+    <CardWrapper
+      type="New Password"
+      headerLabel="Enter New password"
+      backButtonHref="/auth/login"
+      backButtonLabel="Back to login"
+    >
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          <div className="space-y-4">
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>New Password</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="password"
+                      placeholder="**********"
+                      {...field}
+                      disabled={loading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-        <div className="space-y-2">
-          {error && <FormError content={error} />}
-          {success && <FormSuccess content={success} />}
-        </div>
+          <div className="space-y-2">
+            {error && <FormError content={error} />}
+            {success && <FormSuccess content={success} />}
+          </div>
 
-        <Button
-          className="w-full bg-[#002D74] hover:bg-[#04204a] hover:scale-110 duration-300"
-          type="submit"
-          disabled={loading}
-        >
-          Thay đổi mật khẩu
-        </Button>
-      </form>
-    </Form>
+          <Button
+            className="w-full bg-[#002D74] hover:bg-[#04204a] hover:scale-110 duration-300"
+            type="submit"
+            disabled={loading}
+          >
+            Thay đổi mật khẩu
+          </Button>
+        </form>
+      </Form>
+    </CardWrapper>
   );
 };
 

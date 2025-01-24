@@ -19,6 +19,7 @@ interface CardProps {
   showSocial?: boolean;
   forgotPassword?: boolean;
   iconRight?: boolean;
+  loading?: boolean;
 }
 
 const CardWarpper = ({
@@ -30,6 +31,7 @@ const CardWarpper = ({
   showSocial,
   forgotPassword,
   iconRight,
+  loading
 }: CardProps) => {
   return (
     <section className="bg-gray-100 max-w-3xl w-full grid md:grid-cols-2 rounded-2xl shadow-lg p-5 m-1 md:m-4 lg:m-0">
@@ -51,7 +53,7 @@ const CardWarpper = ({
               </div>
 
               <CardFooter className="px-0">
-                <Social />
+                <Social loading={loading}/>
               </CardFooter>
             </>
           )}
@@ -78,12 +80,14 @@ const CardWarpper = ({
       </Card>
 
       <div className="md:block hidden w-full relative">
-        <Image
-          alt="Auth Image"
-          className="rounded-2xl object-cover"
-          src="/images/billboard.avif"
-          fill
-        />
+        <Link href="/">
+          <Image
+            alt="Auth Image"
+            className="rounded-2xl object-cover"
+            src="/images/billboard.avif"
+            fill
+          />
+        </Link>
       </div>
     </section>
   );

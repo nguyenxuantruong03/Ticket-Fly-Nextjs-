@@ -2,7 +2,7 @@ import { PropsWithChildren } from "react";
 
 const AuthLayout = ({ children }: PropsWithChildren) => {
   return (
-    <div className="bg-gradient-to-br from-lime-400 to-cyan-400 h-screen flex items-center justify-center">
+    <div className="bg-[radial-gradient(ellipse_at_top,var(--tw-gradient-stops))] from-sky-400 to-blue-800 h-screen flex items-center justify-center">
       {children}
     </div>
   );
