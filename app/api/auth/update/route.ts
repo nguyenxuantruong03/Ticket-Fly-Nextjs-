@@ -3,12 +3,12 @@ import { NextRequest } from "next/server";
 
 export async function POST(req: NextRequest) {
   const body = await req.json();
-  const { accessToken, refreshToken } = body;
+  const { accessToken } = body;
 
-  if (!accessToken || !refreshToken) {
+  if (!accessToken) {
     return new Response("Provide Token", { status: 401 });
   }
 
-  await updateTokens({ accessToken, refreshToken });
+  await updateTokens({ accessToken });
   return new Response("OK", { status: 200 });
 }

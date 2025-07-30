@@ -13,18 +13,23 @@ export type Session = {
     isTwoFactorEnabled?: boolean;
   };
   accessToken: string;
-  refreshToken: string;
+  refreshToken?: string;
 };
 
 const secretKey = process.env.SESSION_SECRET_KEY!;
 const encodeKey = new TextEncoder().encode(secretKey);
-
+const isProduction = process.env.NODE_ENV === "production";
 //Create Session
 export async function createSession(payload: Session) {
   const expiredAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
 
-  const session = await new SignJWT(payload)
+  const session = await new SignJWT({
+    user: payload.user,
+    accessToken: payload.accessToken,
+    refreshToken: payload.refreshToken,
+  })
     .setProtectedHeader({ alg: "HS256" })
+    .setSubject(payload.user.id) // ⚠️ thêm dòng này để backend đọc được payload.sub
     .setIssuedAt()
     .setExpirationTime("7d")
     .sign(encodeKey);
@@ -33,7 +38,7 @@ export async function createSession(payload: Session) {
     // giúp bảo vệ cookie khỏi việc truy cập từ JavaScript (ngăn chặn XSS).
     httpOnly: true,
     // đảm bảo cookie chỉ được gửi qua HTTPS.
-    secure: true,
+    secure: isProduction,
     expires: expiredAt,
     // giúp ngăn chặn CSRF bằng cách chỉ cho phép cookie được gửi khi yêu cầu đến từ cùng một miền.
     sameSite: "lax",
@@ -55,7 +60,7 @@ export async function getSession() {
     return payload as Session;
   } catch (err) {
     console.error("Failed to verify session", err);
-    redirect("/auth/signin");
+    redirect("/auth/login");
   }
 }
 
@@ -66,7 +71,6 @@ export async function deleteSession() {
 
 //Refresh token
 export const refreshToken = async (oldrefreshToken: string) => {
-  console.log("refreshToken", oldrefreshToken);
   try {
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/refresh`,
@@ -108,25 +112,17 @@ export const refreshToken = async (oldrefreshToken: string) => {
 };
 
 //Update tokens
-export async function updateTokens({
-  accessToken,
-  refreshToken,
-}: {
-  accessToken: string;
-  refreshToken: string;
-}) {
+export async function updateTokens({ accessToken }: { accessToken: string }) {
   const cookie = (await cookies()).get("session")?.value;
   if (!cookie) return null;
 
+  // payload chứa dữ liệu (claims) được mã hóa bên trong JWT.
   const { payload } = await jwtVerify<Session>(cookie, encodeKey);
   if (!payload) throw new Error("Session not found");
 
   const newPayload: Session = {
-    user: {
-      ...payload.user,
-    },
+    user: { ...payload.user },
     accessToken,
-    refreshToken,
   };
 
   await createSession(newPayload);

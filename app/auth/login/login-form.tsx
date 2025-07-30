@@ -29,7 +29,6 @@ import {
 } from "./catch";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
-import { getCaptchaToken } from "@/utils/captcha";
 import CardWarpper from "@/components/auth/card/card-wrapper";
 
 const formSchema = z.object({
@@ -126,17 +125,11 @@ export default function LoginForm() {
     setWarning("");
     setSuccess("");
     try {
-      // Token captcha
-      const token = await getCaptchaToken();
-      if (!token) {
-        setError("Có lỗi xảy ra trong hệ thống token verify không được tạo!");
-      }
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
         {
           email: data.email,
-          password: data.password,
-          tokenCaptcha: token,
+          password: data.password
         }
       );
 
@@ -144,25 +137,22 @@ export default function LoginForm() {
 
       // Kiểm tra nếu tài khoản có bật 2FA thì điều hướng đến trang 2FA + email
       if (result.isTwoFactorEnabled) {
-        return router.push(
-          `/auth/two-factor?email=${data.email}&redirectfromlogin=${redirect}`
-        );
+        return router.push(`/auth/two-factor?email=${data.email}&redirectfromlogin=${redirect}`);
+      }else{
+        //Create the session for auth user
+        await createSession({
+          user: {
+            id: result.id,
+            name: result.name,
+            role: result.role,
+            isTwoFactorEnabled: result.isTwoFactorEnabled,
+          },
+          accessToken: result.accessToken,
+          refreshToken: result.refreshToken,
+        });
+        // Điều hướng đến trang redirect hoặc trang mặc định
+        router.push(redirect);
       }
-
-      //Create the session for auth user
-      await createSession({
-        user: {
-          id: result.id,
-          name: result.name,
-          role: result.role,
-          isTwoFactorEnabled: result.isTwoFactorEnabled,
-        },
-        accessToken: result.accessToken,
-        refreshToken: result.refreshToken,
-      });
-
-      // Điều hướng đến trang redirect hoặc trang mặc định
-      router.push(redirect);
     } catch (err) {
       if (axios.isAxiosError(err)) {
         const { countResendEmailVerify, emailNotVerified, timeUnBan, message } =
@@ -221,64 +211,61 @@ export default function LoginForm() {
       iconRight
       loading={loading}
     >
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 w-full"
-        >
-          <div className="flex flex-col gap-2">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[#002D74]">Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="truong@gmail.com"
-                      {...field}
-                      disabled={loading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-[#002D74]">Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="**********"
-                      {...field}
-                      disabled={loading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="space-y-2">
-            {warning && <FormWarning content={warning} />}
-            {hint && <FormHint content={hint} />}
-            {error && <FormError content={error} />}
-            {success && <FormSuccess content={success} />}
-            <Button
-              disabled={loading}
-              className="w-full bg-[#002D74] hover:bg-[#04204a] hover:scale-110 duration-300"
-              type="submit"
-            >
-              {loading ? "Loading..." : "Login"}
-            </Button>
-          </div>
-        </form>
-      </Form>
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full">
+        <div className="flex flex-col gap-2">
+          <FormField
+            control={form.control}
+            name="email"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[#002D74]">Email</FormLabel>
+                <FormControl>
+                  <Input
+                    type="email"
+                    placeholder="truong@gmail.com"
+                    {...field}
+                    disabled={loading}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-[#002D74]">Password</FormLabel>
+                <FormControl>
+                  <Input
+                    type="password"
+                    placeholder="**********"
+                    {...field}
+                    disabled={loading}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
+        <div className="space-y-2">
+          {warning && <FormWarning content={warning} />}
+          {hint && <FormHint content={hint} />}
+          {error && <FormError content={error} />}
+          {success && <FormSuccess content={success} />}
+          <Button
+            disabled={loading}
+            className="w-full bg-[#002D74] hover:bg-[#04204a] hover:scale-110 duration-300"
+            type="submit"
+          >
+            {loading ? "Loading..." : "Login"}
+          </Button>
+        </div>
+      </form>
+    </Form>
     </CardWarpper>
   );
 }

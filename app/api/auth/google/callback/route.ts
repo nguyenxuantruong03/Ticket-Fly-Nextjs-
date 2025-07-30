@@ -11,6 +11,7 @@ export async function GET(req: NextRequest) {
   const userId = searchParams.get("userId");
   const name = searchParams.get("name");
   const role = searchParams.get("role");
+  const redirectTo = searchParams.get("redirect") || "/";
 
   if (!accessToken || !refreshToken || !userId || !name || !role) {
     throw new Error("Google Oauth Failed!");
@@ -26,5 +27,5 @@ export async function GET(req: NextRequest) {
     refreshToken,
   });
 
-  redirect("/");
+  redirect(redirectTo);
 }

@@ -25,7 +25,6 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { createSession } from "@/lib/session";
-import { getCaptchaToken } from "@/utils/captcha";
 import CardWrapper from "@/components/auth/card/card-wrapper";
 
 export const NewPasswordSchema = z.object({
@@ -57,18 +56,12 @@ const TwoFactorForm = () => {
     setSuccess("");
     try {
       setLoading(true);
-      // Token captcha
-      const token = await getCaptchaToken();
-      if (!token) {
-        setError("Có lỗi xảy ra trong hệ thống token verify không được tạo!");
-      }
 
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/twoFactor`,
         {
           email,
           code: data.code,
-          tokenCaptcha: token,
         }
       );
 

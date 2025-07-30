@@ -5,6 +5,7 @@ import { getSession, Session } from "@/lib/session";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import axios from "axios";
 
 const SignButton = () => {
   const pathname = usePathname();
@@ -20,8 +21,20 @@ const SignButton = () => {
   }, []);
 
   const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "GET" });
-    setSession(null); // Cập nhật trạng thái session trên client
+    try {
+      const currentPath = window.location.pathname;
+
+      await axios.get(
+        `/api/auth/logout?redirect=${encodeURIComponent(currentPath)}`
+      );
+
+      // 👇 Client tự redirect sau khi gọi xong API
+      window.location.href = `/auth/login?redirect=${encodeURIComponent(
+        currentPath
+      )}`;
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   const loginUrl = pathname
