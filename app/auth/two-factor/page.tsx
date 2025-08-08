@@ -1,7 +1,12 @@
+"use client";
+
+import { Suspense } from "react";
 import TwoFactorForm from "./two-factor-form";
 
-const TwoFactor = () => {
-  return <TwoFactorForm />;
-};
-
-export default TwoFactor;
+export default function TwoFactorPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <TwoFactorForm />
+    </Suspense>
+  );
+}

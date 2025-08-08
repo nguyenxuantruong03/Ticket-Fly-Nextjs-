@@ -6,25 +6,19 @@ import { useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import FormError from "@/components/form-notification/form-error";
 import FormSuccess from "@/components/form-notification/form-success";
 import { Input } from "@/components/ui/input";
 import axios from "axios";
-import CardWrapper  from "@/components/auth/card/card-wrapper";
-
-export const NewPasswordSchema = z.object({
-  password: z.string().min(6, {
-    message: "Mật khẩu yêu cầu 6 kí tự!",
-  }),
-});
+import AuthForm from "@/components/auth/form-auth";
+import { NewPasswordSchema } from "@/schemas/auths/auth";
+import TurnstileWidget from "@/components/TurnstileWidget";
 
 const NewPasswordForm = () => {
   const searchParam = useSearchParams();
@@ -33,6 +27,7 @@ const NewPasswordForm = () => {
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const form = useForm<z.infer<typeof NewPasswordSchema>>({
     resolver: zodResolver(NewPasswordSchema),
@@ -42,6 +37,16 @@ const NewPasswordForm = () => {
   });
 
   const onSubmit = async (data: z.infer<typeof NewPasswordSchema>) => {
+    if (!turnstileToken) {
+      setError("Vui lòng xác minh bảo mật (Captcha) trước khi tiếp tục.");
+      return;
+    }
+
+    if (!data) {
+      setError("Không thể gửi dữ liệu. Vui lòng thử lại sau.");
+      return;
+    }
+
     setError("");
     setSuccess("");
     try {
@@ -50,68 +55,62 @@ const NewPasswordForm = () => {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/newPassword`,
         {
-          password: data.password,
           token,
+          password: data.password,
+          turnstileToken: turnstileToken,
         }
       );
 
       if (response.data.success) {
+        setLoading(true)
         setSuccess(response.data.success);
       }
     } catch (err) {
+      setLoading(false)
       if (axios.isAxiosError(err)) {
         const { message } = err.response?.data || {};
         setError(message || "Đã có lỗi xảy ra, vui lòng thử lại sau");
       }
-    } finally {
-      setLoading(false);
     }
   };
   return (
-    <CardWrapper
-      type="New Password"
-      headerLabel="Enter New password"
-      backButtonHref="/auth/login"
-      backButtonLabel="Back to login"
+    <AuthForm
+      typeForm="new-password"
+      form={form}
+      onSubmit={onSubmit}
+      titleIntroduction={"Join us"}
+      descriptionIntroduction={
+        "Create your account to get started with our service."
+      }
+      loading={loading || !turnstileToken}
     >
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>New Password</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="password"
-                      placeholder="**********"
-                      {...field}
-                      disabled={loading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+      <div className="space-y-4">
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>New Password</FormLabel>
+              <FormControl>
+                <Input
+                  type="password"
+                  placeholder="**********"
+                  {...field}
+                  disabled={loading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
 
-          <div className="space-y-2">
-            {error && <FormError content={error} />}
-            {success && <FormSuccess content={success} />}
-          </div>
-
-          <Button
-            className="w-full bg-[#002D74] hover:bg-[#04204a] hover:scale-110 duration-300"
-            type="submit"
-            disabled={loading}
-          >
-            Thay đổi mật khẩu
-          </Button>
-        </form>
-      </Form>
-    </CardWrapper>
+      <div className="space-y-2">
+        {error && <FormError content={error} />}
+        {success && <FormSuccess content={success} />}
+        <TurnstileWidget onToken={setTurnstileToken} />
+      </div>
+    </AuthForm>
   );
 };
 

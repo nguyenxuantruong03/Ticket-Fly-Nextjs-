@@ -6,7 +6,7 @@ import FormSuccess from "@/components/form-notification/form-success";
 import FormError from "@/components/form-notification/form-error";
 import { Loader2 } from "lucide-react";
 import axios from "axios";
-import CardWrapper from "@/components/auth/card/card-wrapper";
+import AuthForm from "@/components/auth/form-auth";
 
 const NewVerificationForm = () => {
   const [error, setError] = useState<string | undefined>();
@@ -30,7 +30,7 @@ const NewVerificationForm = () => {
     try {
       const response = await axios.post(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/verificationAccount`,
-        { token }
+        { token}
       );
 
       // Check if the response contains an error
@@ -56,11 +56,13 @@ const NewVerificationForm = () => {
   }, [onSubmit]);
 
   return (
-    <CardWrapper
-      type="Verification Account"
-      headerLabel="Confirming your verification"
-      backButtonHref="/auth/login"
-      backButtonLabel="Back to Login"
+    <AuthForm
+      typeForm="new-verification"
+      onSubmit={onSubmit}
+      titleIntroduction={"Join us"}
+      descriptionIntroduction={
+        "Create your account to get started with our service."
+      }
     >
       <div className="flex items-center w-full justify-center">
         {!success && !error && (
@@ -69,7 +71,7 @@ const NewVerificationForm = () => {
         {success && <FormSuccess content={success} />}
         {!success && error && <FormError content={error} />}
       </div>
-    </CardWrapper>
+    </AuthForm>
   );
 };
 

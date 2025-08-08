@@ -6,7 +6,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
-  Form,
   FormControl,
   FormDescription,
   FormField,
@@ -14,7 +13,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Button } from "@/components/ui/button";
 import FormError from "@/components/form-notification/form-error";
 import FormSuccess from "@/components/form-notification/form-success";
 import axios from "axios";
@@ -25,13 +23,9 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 import { createSession } from "@/lib/session";
-import CardWrapper from "@/components/auth/card/card-wrapper";
-
-export const NewPasswordSchema = z.object({
-  code: z.string().min(6, {
-    message: "Your one-time password must be 6 characters.",
-  }),
-});
+import TurnstileWidget from "@/components/TurnstileWidget";
+import AuthForm from "@/components/auth/form-auth";
+import { TwoFactorPasswordSchema } from "@/schemas/auths/auth";
 
 const TwoFactorForm = () => {
   const router = useRouter();
@@ -40,18 +34,29 @@ const TwoFactorForm = () => {
   const [error, setError] = useState<string>("");
   const [success, setSuccess] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const email = searchParam.get("email");
   const redirect = searchParam.get("redirectfromlogin") || "/";
 
-  const form = useForm<z.infer<typeof NewPasswordSchema>>({
-    resolver: zodResolver(NewPasswordSchema),
+  const form = useForm<z.infer<typeof TwoFactorPasswordSchema>>({
+    resolver: zodResolver(TwoFactorPasswordSchema),
     defaultValues: {
       code: "",
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof NewPasswordSchema>) => {
+  const onSubmit = async (data: z.infer<typeof TwoFactorPasswordSchema>) => {
+    if (!turnstileToken) {
+      setError("Vui lòng xác minh bảo mật (Captcha) trước khi tiếp tục.");
+      return;
+    }
+
+    if (!data) {
+      setError("Không thể gửi dữ liệu. Vui lòng thử lại sau.");
+      return;
+    }
+
     setError("");
     setSuccess("");
     try {
@@ -62,10 +67,15 @@ const TwoFactorForm = () => {
         {
           email,
           code: data.code,
+          turnstileToken: turnstileToken,
         }
       );
 
       const result = response.data;
+
+      if (result.success) {
+        setLoading(true);
+      }
 
       //Create the session for auth user
       await createSession({
@@ -82,71 +92,63 @@ const TwoFactorForm = () => {
       // Điều hướng đến trang redirect hoặc trang mặc định
       router.push(redirect);
     } catch (err) {
+      setLoading(false);
       if (axios.isAxiosError(err)) {
         const { message } = err.response?.data || {};
         setError(message || "Đã có lỗi xảy ra, vui lòng thử lại sau");
       }
-    } finally {
-      setLoading(false);
     }
   };
   return (
-    <CardWrapper
-      type="Two Factor Authentication"
-      headerLabel="2FA"
-      backButtonHref="/auth/login"
-      backButtonLabel="Back"
+    <AuthForm
+      typeForm="two-factor"
+      form={form}
+      onSubmit={onSubmit}
+      titleIntroduction={"Join us"}
+      loading={loading || !turnstileToken}
+      descriptionIntroduction={
+        "Create your account to get started with our service."
+      }
     >
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="code"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Two Factor</FormLabel>
-                  <FormControl>
-                    <div className="flex items-center justify-center">
-                      <InputOTP maxLength={6} {...field}>
-                        <InputOTPGroup>
-                          <InputOTPSlot index={0} />
-                          <InputOTPSlot index={1} />
-                          <InputOTPSlot index={2} />
-                        </InputOTPGroup>
-                        <InputOTPSeparator />
-                        <InputOTPGroup>
-                          <InputOTPSlot index={3} />
-                          <InputOTPSlot index={4} />
-                          <InputOTPSlot index={5} />
-                        </InputOTPGroup>
-                      </InputOTP>
-                    </div>
-                  </FormControl>
-                  <FormDescription>
-                    Please enter the two factor sent to your email.
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+      <div className="space-y-4">
+        <FormField
+          control={form.control}
+          name="code"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Two Factor</FormLabel>
+              <FormControl>
+                <div className="flex items-center justify-center">
+                  <InputOTP maxLength={6} {...field}>
+                    <InputOTPGroup>
+                      <InputOTPSlot index={0} />
+                      <InputOTPSlot index={1} />
+                      <InputOTPSlot index={2} />
+                    </InputOTPGroup>
+                    <InputOTPSeparator />
+                    <InputOTPGroup>
+                      <InputOTPSlot index={3} />
+                      <InputOTPSlot index={4} />
+                      <InputOTPSlot index={5} />
+                    </InputOTPGroup>
+                  </InputOTP>
+                </div>
+              </FormControl>
+              <FormDescription>
+                Please enter the two factor sent to your email.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
 
-          <div className="space-y-2">
-            {error && <FormError content={error} />}
-            {success && <FormSuccess content={success} />}
-          </div>
-
-          <Button
-            className="w-full bg-[#002D74] hover:bg-[#04204a] hover:scale-110 duration-300"
-            type="submit"
-            disabled={loading}
-          >
-            {loading ? "Loading..." : "Submit"}
-          </Button>
-        </form>
-      </Form>
-    </CardWrapper>
+      <div className="space-y-2">
+        {error && <FormError content={error} />}
+        {success && <FormSuccess content={success} />}
+      </div>
+      <TurnstileWidget onToken={setTurnstileToken} />
+    </AuthForm>
   );
 };
 

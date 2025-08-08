@@ -1,7 +1,12 @@
+"use client";
+
+import { Suspense } from "react";
 import NewPasswordForm from "./new-password-form";
 
-const NewPassword = () => {
-  return <NewPasswordForm />;
-};
-
-export default NewPassword;
+export default function NewPasswordPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <NewPasswordForm />
+    </Suspense>
+  );
+}

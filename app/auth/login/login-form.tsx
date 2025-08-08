@@ -1,12 +1,10 @@
 "use client";
 
-import { zodResolver } from "@hookform/resolvers/zod";
+import AuthForm from "@/components/auth/form-auth";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
-import { Button } from "@/components/ui/button";
+import { zodResolver } from "@hookform/resolvers/zod";
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
@@ -14,38 +12,25 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { JSX, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { JSX, useEffect, useState } from "react";
+import { formatDistanceToNow } from "date-fns";
+import { vi } from "date-fns/locale";
 import axios from "axios";
-import { createSession } from "@/lib/session";
-import FormError from "@/components/form-notification/form-error";
-import FormHint from "@/components/form-notification/form-hint";
-import FormWarning from "@/components/form-notification/form-warning";
-import FormSuccess from "@/components/form-notification/form-success";
 import {
   CountResendEmailVerifyCatch,
   EmailNotVerifiedCatch,
   TimeUnBanCatch,
 } from "./catch";
-import { formatDistanceToNow } from "date-fns";
-import { vi } from "date-fns/locale";
-import CardWarpper from "@/components/auth/card/card-wrapper";
+import { createSession } from "@/lib/session";
+import FormWarning from "@/components/form-notification/form-warning";
+import FormHint from "@/components/form-notification/form-hint";
+import FormError from "@/components/form-notification/form-error";
+import FormSuccess from "@/components/form-notification/form-success";
+import TurnstileWidget from "@/components/TurnstileWidget";
+import { LoginSchema } from "@/schemas/auths/auth";
 
-const formSchema = z.object({
-  email: z.string().email({
-    message: "Email không hợp lệ !",
-  }),
-  password: z
-    .string()
-    .min(6, {
-      message: "Yêu cầu nhập tên ít nhất 6 ký tự!",
-    })
-    .regex(/^(?=.*\d)(?=.*[a-z])(?=.*[0-9]).{6,20}$/, {
-      message: "Mật khẩu yêu cầu [a-z] và [0-9] ít nhất 6 ký tự!",
-    }),
-});
-
-export type LoginFormValues = z.infer<typeof formSchema>;
+export type LoginFormValues = z.infer<typeof LoginSchema>;
 
 export default function LoginForm() {
   const router = useRouter();
@@ -57,6 +42,7 @@ export default function LoginForm() {
   const [hint, setHint] = useState<JSX.Element | string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [warning, setWarning] = useState<JSX.Element | string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   const redirect = searchParams.get("redirect") || "/"; // Lấy giá trị `redirect` từ URL hoặc mặc định là "/"
 
@@ -86,7 +72,7 @@ export default function LoginForm() {
   }, [errorGooglebanUntil]);
 
   const form = useForm<LoginFormValues>({
-    resolver: zodResolver(formSchema),
+    resolver: zodResolver(LoginSchema),
     defaultValues: {
       password: "",
       email: "",
@@ -119,6 +105,16 @@ export default function LoginForm() {
   };
 
   const onSubmit = async (data: LoginFormValues) => {
+    if (!turnstileToken) {
+      setError("Vui lòng xác minh bảo mật (Captcha) trước khi tiếp tục.");
+      return;
+    }
+
+    if (!data) {
+      setError("Không thể gửi dữ liệu. Vui lòng thử lại sau.");
+      return;
+    }
+
     setLoading(true);
     setHint("");
     setError("");
@@ -129,16 +125,23 @@ export default function LoginForm() {
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
         {
           email: data.email,
-          password: data.password
+          password: data.password,
+          turnstileToken: turnstileToken,
         }
       );
 
       const result = response.data;
 
+      if(result.success){
+        setLoading(true)
+      }
+
       // Kiểm tra nếu tài khoản có bật 2FA thì điều hướng đến trang 2FA + email
       if (result.isTwoFactorEnabled) {
-        return router.push(`/auth/two-factor?email=${data.email}&redirectfromlogin=${redirect}`);
-      }else{
+        return router.push(
+          `/auth/two-factor?email=${data.email}&redirectfromlogin=${redirect}`
+        );
+      } else {
         //Create the session for auth user
         await createSession({
           user: {
@@ -154,6 +157,7 @@ export default function LoginForm() {
         router.push(redirect);
       }
     } catch (err) {
+      setLoading(false)
       if (axios.isAxiosError(err)) {
         const { countResendEmailVerify, emailNotVerified, timeUnBan, message } =
           err.response?.data || {};
@@ -195,77 +199,66 @@ export default function LoginForm() {
       } else {
         setError("Có lỗi xảy ra!");
       }
-    } finally {
-      setLoading(false);
-    }
+    } 
   };
-
   return (
-    <CardWarpper
-      type="Login"
-      headerLabel="Welcome back"
-      backButtonHref="/auth/register"
-      backButtonLabel="Don't have an account"
-      showSocial
+    <AuthForm
+      typeForm="login"
+      form={form}
+      onSubmit={onSubmit}
       forgotPassword
-      iconRight
-      loading={loading}
+      showSocial
+      titleIntroduction={"Join us"}
+      descriptionIntroduction={
+        "Create your account to get started with our service."
+      }
+      loading={loading || !turnstileToken}
     >
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 w-full">
-        <div className="flex flex-col gap-2">
-          <FormField
-            control={form.control}
-            name="email"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-[#002D74]">Email</FormLabel>
-                <FormControl>
-                  <Input
-                    type="email"
-                    placeholder="truong@gmail.com"
-                    {...field}
-                    disabled={loading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="password"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-[#002D74]">Password</FormLabel>
-                <FormControl>
-                  <Input
-                    type="password"
-                    placeholder="**********"
-                    {...field}
-                    disabled={loading}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-        <div className="space-y-2">
-          {warning && <FormWarning content={warning} />}
-          {hint && <FormHint content={hint} />}
-          {error && <FormError content={error} />}
-          {success && <FormSuccess content={success} />}
-          <Button
-            disabled={loading}
-            className="w-full bg-[#002D74] hover:bg-[#04204a] hover:scale-110 duration-300"
-            type="submit"
-          >
-            {loading ? "Loading..." : "Login"}
-          </Button>
-        </div>
-      </form>
-    </Form>
-    </CardWarpper>
+      <div className="flex flex-col gap-2">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-[#002D74]">Email</FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="truong@gmail.com"
+                  {...field}
+                  disabled={loading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="password"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-[#002D74]">Password</FormLabel>
+              <FormControl>
+                <Input
+                  type="password"
+                  placeholder="**********"
+                  {...field}
+                  disabled={loading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+      <div className="space-y-2">
+        {warning && <FormWarning content={warning} />}
+        {hint && <FormHint content={hint} />}
+        {error && <FormError content={error} />}
+        {success && <FormSuccess content={success} />}
+        <TurnstileWidget onToken={setTurnstileToken} />
+      </div>
+    </AuthForm>
   );
 }

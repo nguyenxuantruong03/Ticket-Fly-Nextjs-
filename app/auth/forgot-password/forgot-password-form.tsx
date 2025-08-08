@@ -5,7 +5,6 @@ import { JSX, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 import {
-  Form,
   FormControl,
   FormField,
   FormItem,
@@ -13,22 +12,17 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import FormError from "@/components/form-notification/form-error";
 import FormSuccess from "@/components/form-notification/form-success";
 import axios from "axios";
 import { formatDistanceToNow } from "date-fns";
 import { vi } from "date-fns/locale";
-import { CountResendEmailVerifyCatch, TimeUnBanCatch } from "./catch";
 import FormHint from "@/components/form-notification/form-hint";
 import FormWarning from "@/components/form-notification/form-warning";
-import CardWrapper  from '@/components/auth/card/card-wrapper';
-
-export const ForgotPasswordSchema = z.object({
-  email: z.string().email({
-    message: "Email không hợp lệ !",
-  }),
-});
+import AuthForm from "@/components/auth/form-auth";
+import { CountResendEmailVerifyCatch, TimeUnBanCatch } from "./catch";
+import { ForgotPasswordSchema } from "@/schemas/auths/auth";
+import TurnstileWidget from "@/components/TurnstileWidget";
 
 const ForgotPasswordForm = () => {
   const [loading, setLoading] = useState(false);
@@ -36,6 +30,7 @@ const ForgotPasswordForm = () => {
   const [success, setSuccess] = useState<string>("");
   const [hint, setHint] = useState<string | JSX.Element | null>(null);
   const [warning, setWarning] = useState<JSX.Element | string | null>(null);
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   // form bên dưới dùng để validate trường nhập theo loginForm bên dưới gọi form đẻ validate code đã xử lý ở  đây và bên dưới dùng destructuring để gọi hết vào
   const form = useForm<z.infer<typeof ForgotPasswordSchema>>({
@@ -46,6 +41,16 @@ const ForgotPasswordForm = () => {
   });
 
   const onSubmit = async (data: z.infer<typeof ForgotPasswordSchema>) => {
+    if (!turnstileToken) {
+      setError("Vui lòng xác minh bảo mật (Captcha) trước khi tiếp tục.");
+      return;
+    }
+
+    if (!data) {
+      setError("Không thể gửi dữ liệu. Vui lòng thử lại sau.");
+      return;
+    }
+    setHint("")
     setError("");
     setSuccess("");
     try {
@@ -54,12 +59,14 @@ const ForgotPasswordForm = () => {
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/forgotPassword`,
         {
           email: data.email,
+          turnstileToken: turnstileToken,
         }
       );
 
       const { countResendEmailVerify, success } = response.data;
 
       if (success || countResendEmailVerify) {
+        setLoading(true)
         setSuccess(response.data.success);
         if (countResendEmailVerify >= 2) {
           const warningReSentVerificationEmail = CountResendEmailVerifyCatch({
@@ -70,6 +77,7 @@ const ForgotPasswordForm = () => {
         }
       }
     } catch (err) {
+      setLoading(false)
       if (axios.isAxiosError(err)) {
         const { message, timeUnBan } = err.response?.data || {};
 
@@ -88,53 +96,48 @@ const ForgotPasswordForm = () => {
           setError(message || "Đã có lỗi xảy ra, vui lòng thử lại sau");
         }
       }
-    } finally {
-      setLoading(false);
     }
   };
   return (
-    <CardWrapper
-      type="Forgot Password"
-      headerLabel="Forgot your password"
-      backButtonHref="/auth/login"
-      backButtonLabel="Back to login"
+    <AuthForm
+      typeForm="forgot-password"
+      form={form}
+      onSubmit={onSubmit}
+      titleIntroduction={"Join us"}
+      descriptionIntroduction={
+        "Create your account to get started with our service."
+      }
+      loading={loading || !turnstileToken}
     >
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-          <div className="space-y-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input
-                      type="email"
-                      placeholder="truong@gmail.com"
-                      {...field}
-                      disabled={loading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
+      <div className="space-y-4">
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input
+                  type="email"
+                  placeholder="truong@gmail.com"
+                  {...field}
+                  disabled={loading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
 
-          <div className="space-y-2">
-            {warning && <FormWarning content={warning} />}
-            {hint && <FormHint content={hint} />}
-            {error && <FormError content={error} />}
-            {success && <FormSuccess content={success} />}
-          </div>
-
-          <Button className="w-full" type="submit" disabled={loading}>
-            Gửi đến Email
-          </Button>
-        </form>
-      </Form>
-    </CardWrapper>
+      <div className="space-y-2">
+        {warning && <FormWarning content={warning} />}
+        {hint && <FormHint content={hint} />}
+        {error && <FormError content={error} />}
+        {success && <FormSuccess content={success} />}
+        <TurnstileWidget onToken={setTurnstileToken} />
+      </div>
+    </AuthForm>
   );
 };
 
