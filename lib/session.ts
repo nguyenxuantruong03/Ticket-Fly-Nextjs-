@@ -3,7 +3,7 @@ import { SignJWT } from "jose/jwt/sign";
 import { cookies } from "next/headers";
 import { jwtVerify } from "jose";
 import { redirect } from "next/navigation";
-import { Role } from "@/type";
+import { Role } from "@/types/users";
 
 export type Session = {
   user: {
@@ -11,6 +11,7 @@ export type Session = {
     name: string;
     role: Role;
     isTwoFactorEnabled?: boolean;
+    image?: string
   };
   accessToken: string;
   refreshToken?: string;
@@ -73,7 +74,7 @@ export async function deleteSession() {
 export const refreshToken = async (oldrefreshToken: string) => {
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/refresh`,
+      `${process.env.NEXT_PUBLIC_BACKEND_AUTH}/refresh`,
       {
         method: "POST",
         headers: {

@@ -63,7 +63,7 @@ const TwoFactorForm = () => {
       setLoading(true);
 
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/twoFactor`,
+        `${process.env.NEXT_PUBLIC_BACKEND_AUTH}/twoFactor`,
         {
           email,
           code: data.code,

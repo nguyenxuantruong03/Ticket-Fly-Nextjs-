@@ -54,7 +54,7 @@ export default function RegisterForm() {
       if (data) {
         setError(null); // Clear any existing errors before the request
         const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/register`,
+          `${process.env.NEXT_PUBLIC_BACKEND_AUTH}/register`,
           {
             name: data.name,
             email: data.email,

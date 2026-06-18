@@ -14,7 +14,6 @@ interface AuthFormProps<TFormValues extends FieldValues> {
   loading?: boolean;
   titleIntroduction: string;
   descriptionIntroduction: string;
-  forgotPassword?: boolean;
   showSocial?: boolean;
   typeForm:
     | "login"
@@ -34,7 +33,6 @@ export default function AuthForm<TFormValues extends FieldValues>({
   loading,
   titleIntroduction,
   descriptionIntroduction,
-  forgotPassword = false,
   showSocial = false,
 }: AuthFormProps<TFormValues>) {
   const formTitles: Record<string, string> = {
@@ -126,31 +124,19 @@ export default function AuthForm<TFormValues extends FieldValues>({
               <Form {...form}>
                 <form
                   onSubmit={form.handleSubmit(onSubmit)}
-                  className="space-y-8"
+                  className="space-y-3"
                 >
                   {/* Body Form */}
                   {children}
                   {/* Submit button */}
                   {socialButton && (
-                    <div>
-                      <Button
-                        type="submit"
-                        className="w-full bg-[#002D74] hover:bg-[#04204a] hover:scale-110 duration-300 "
-                        disabled={loading}
-                      >
-                        {contentSubmit}
-                      </Button>
-                      {forgotPassword && (
-                        <div className="text-xs mb-4 text-[#002D74]">
-                          <Link
-                            href="/auth/forgot-password"
-                            className="hover:border-slate-900 hover:border-b-[1px]"
-                          >
-                            Forgot your password?
-                          </Link>
-                        </div>
-                      )}
-                    </div>
+                    <Button
+                      type="submit"
+                      className="w-full bg-[#002D74] hover:bg-[#04204a] hover:scale-110 duration-300 "
+                      disabled={loading}
+                    >
+                      {contentSubmit}
+                    </Button>
                   )}
                   {showSocial && (
                     <>
@@ -184,7 +170,7 @@ export default function AuthForm<TFormValues extends FieldValues>({
                 >
                   Nguyên Xuân Trường
                 </Link>{" "}
-                | Website học tiếng Anh hiệu quả và dễ hiểu.
+                | Website Fly Ticket - Đặt chuyến bay an toàn, nhanh chóng và tiện lợi.
               </p>
 
               <div className="flex space-x-4 mt-2">

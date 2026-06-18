@@ -29,7 +29,7 @@ const NewVerificationForm = () => {
 
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/verificationAccount`,
+        `${process.env.NEXT_PUBLIC_BACKEND_AUTH}/verificationAccount`,
         { token}
       );
 

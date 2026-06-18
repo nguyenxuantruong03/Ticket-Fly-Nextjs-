@@ -56,7 +56,7 @@ const ForgotPasswordForm = () => {
     try {
       setLoading(true);
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/forgotPassword`,
+        `${process.env.NEXT_PUBLIC_BACKEND_AUTH}/forgotPassword`,
         {
           email: data.email,
           turnstileToken: turnstileToken,

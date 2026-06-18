@@ -29,6 +29,7 @@ import FormError from "@/components/form-notification/form-error";
 import FormSuccess from "@/components/form-notification/form-success";
 import TurnstileWidget from "@/components/TurnstileWidget";
 import { LoginSchema } from "@/schemas/auths/auth";
+import Link from "next/link";
 
 export type LoginFormValues = z.infer<typeof LoginSchema>;
 
@@ -87,7 +88,7 @@ export default function LoginForm() {
     setSuccess("");
     try {
       await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/reSendVerificationAccount`,
+        `${process.env.NEXT_PUBLIC_BACKEND_AUTH}/reSendVerificationAccount`,
         {
           email: form.getValues("email"),
         }
@@ -122,7 +123,7 @@ export default function LoginForm() {
     setSuccess("");
     try {
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`,
+        `${process.env.NEXT_PUBLIC_BACKEND_AUTH}/login`,
         {
           email: data.email,
           password: data.password,
@@ -132,8 +133,8 @@ export default function LoginForm() {
 
       const result = response.data;
 
-      if(result.success){
-        setLoading(true)
+      if (result.success) {
+        setLoading(true);
       }
 
       // Kiểm tra nếu tài khoản có bật 2FA thì điều hướng đến trang 2FA + email
@@ -157,7 +158,7 @@ export default function LoginForm() {
         router.push(redirect);
       }
     } catch (err) {
-      setLoading(false)
+      setLoading(false);
       if (axios.isAxiosError(err)) {
         const { countResendEmailVerify, emailNotVerified, timeUnBan, message } =
           err.response?.data || {};
@@ -199,14 +200,13 @@ export default function LoginForm() {
       } else {
         setError("Có lỗi xảy ra!");
       }
-    } 
+    }
   };
   return (
     <AuthForm
       typeForm="login"
       form={form}
       onSubmit={onSubmit}
-      forgotPassword
       showSocial
       titleIntroduction={"Join us"}
       descriptionIntroduction={
@@ -251,6 +251,15 @@ export default function LoginForm() {
             </FormItem>
           )}
         />
+        <div className="text-xs mb-4 text-[#002D74]" >
+          <Link
+          tabIndex={-1} 
+            href="/auth/forgot-password"
+            className="hover:border-slate-900 hover:border-b-[1px]"
+          >
+            Forgot your password?
+          </Link>
+        </div>
       </div>
       <div className="space-y-2">
         {warning && <FormWarning content={warning} />}

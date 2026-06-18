@@ -1,36 +1,42 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { getSession, Session } from "@/lib/session";
+import { useState } from "react";
 import { Button } from "../ui/button";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import axios from "axios";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import InformationAvata from "./card/information-avata";
+import { getInitialsName } from "@/lib/libs";
+import { User } from "@/types/users";
+import { Session } from "@/lib/session";
+interface UserProps {
+  user: User;
+  sessionData: Session | null;
+}
 
-const SignButton = () => {
+const SignButton = ({ user, sessionData }: UserProps) => {
+  const [opentMenuAvata, setOpenMenuAvata] = useState(false);
   const pathname = usePathname();
-  const [session, setSession] = useState<Session | null>(null);
-
-  useEffect(() => {
-    const fetchSession = async () => {
-      const sessionData = await getSession();
-      setSession(sessionData);
-    };
-
-    fetchSession();
-  }, []);
+  const isLogged = !!(sessionData?.user && user);
 
   const handleLogout = async () => {
     try {
       const currentPath = window.location.pathname;
 
       await axios.get(
-        `/api/auth/logout?redirect=${encodeURIComponent(currentPath)}`
+        `/api/auth/logout?redirect=${encodeURIComponent(currentPath)}`,
       );
 
       // 👇 Client tự redirect sau khi gọi xong API
       window.location.href = `/auth/login?redirect=${encodeURIComponent(
-        currentPath
+        currentPath,
       )}`;
     } catch (error) {
       console.error(error);
@@ -43,7 +49,7 @@ const SignButton = () => {
 
   return (
     <div className="flex items-center gap-2 ml-auto">
-      {!session || !session.user ? (
+      {!isLogged ? (
         <>
           <Link href={loginUrl}>
             <Button
@@ -64,14 +70,34 @@ const SignButton = () => {
         </>
       ) : (
         <>
-          <p>{session.user.name}</p>
-          <Button
-            className="dark:text-slate-200 text-salte-900"
-            variant="link"
-            onClick={handleLogout}
-          >
-            Logout
-          </Button>
+          <div>
+            <Popover onOpenChange={setOpenMenuAvata}>
+              <PopoverTrigger asChild>
+                <div className="flex items-center space-x-2 cursor-pointer ">
+                  <Avatar>
+                    {user.image ? (
+                      <AvatarImage src={user.image} />
+                    ) : (
+                      <AvatarFallback>
+                        {getInitialsName(user.name || "")}
+                      </AvatarFallback>
+                    )}
+                  </Avatar>
+                  <div className="flex items-center">
+                    <p className="line-clamp-1 w-full max-w-24 truncate">
+                      {user.name}
+                    </p>
+                    {opentMenuAvata ? <ChevronUp /> : <ChevronDown />}
+                  </div>
+                </div>
+              </PopoverTrigger>
+              <PopoverContent className="w-screen md:w-60 max-w-none mt-[19px] p-0 overflow-hidden">
+                <div>
+                  <InformationAvata handleLogout={handleLogout} />
+                </div>
+              </PopoverContent>
+            </Popover>
+          </div>
         </>
       )}
     </div>

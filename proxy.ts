@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getSession } from "./lib/session";
 
-export default async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const session = await getSession();
 
   // Nếu chưa có session, điều hướng đến trang đăng nhập với truy vấn redirect

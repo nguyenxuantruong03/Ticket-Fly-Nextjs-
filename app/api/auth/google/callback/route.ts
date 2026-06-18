@@ -1,5 +1,5 @@
 import { createSession } from "@/lib/session";
-import { Role } from "@/type";
+import { Role } from "@/types/users";
 import { redirect } from "next/navigation";
 import { NextRequest } from "next/server";
 

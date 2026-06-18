@@ -7,10 +7,9 @@ export interface FeatchOption extends RequestInit {
 
 export const authFetch = async (
   url: string | URL,
-  options: FeatchOption = {}
+  options: FeatchOption = {},
 ): Promise<Response> => {
   const session = await getSession();
-
   // Nếu không có accessToken, chuyển hướng sang login
   if (!session?.accessToken) {
     await handleLogout(); // logout sạch sẽ rồi redirect
@@ -57,12 +56,12 @@ const handleLogout = async () => {
     const currentPath = window.location.pathname;
 
     await axios.get(
-      `/api/auth/logout?redirect=${encodeURIComponent(currentPath)}`
+      `/api/auth/logout?redirect=${encodeURIComponent(currentPath)}`,
     );
 
     // 👇 Client tự redirect sau khi gọi xong API
     window.location.href = `/auth/login?redirect=${encodeURIComponent(
-      currentPath
+      currentPath,
     )}`;
   } catch (error) {
     console.error(error);

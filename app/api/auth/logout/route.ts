@@ -5,9 +5,9 @@ import { NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
   const redirectPath =
     req.nextUrl.searchParams.get("redirect") || "/";
-
+    
   const response = await authFetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/logout`,
+    `${process.env.NEXT_PUBLIC_BACKEND_AUTH}/logout`,
     { method: "POST" }
   );
 

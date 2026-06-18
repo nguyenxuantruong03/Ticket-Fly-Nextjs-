@@ -14,8 +14,8 @@ const Social = ({ loading }: SocialProps) => {
   const redirect = searchParams.get("redirect") || "/";
 
   const googleLoginUrl = `${
-    process.env.NEXT_PUBLIC_BACKEND_URL
-  }/auth/google/login?redirect=${encodeURIComponent(redirect)}`;
+    process.env.NEXT_PUBLIC_BACKEND_AUTH_GOOGLE
+  }/google/login?redirect=${encodeURIComponent(redirect)}`;
 
   return (
     <Button

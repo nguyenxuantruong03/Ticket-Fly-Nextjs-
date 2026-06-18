@@ -53,7 +53,7 @@ const NewPasswordForm = () => {
       setLoading(true);
 
       const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/newPassword`,
+        `${process.env.NEXT_PUBLIC_BACKEND_AUTH}/newPassword`,
         {
           token,
           password: data.password,
