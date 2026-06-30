@@ -19,9 +19,10 @@ import { Session } from "@/lib/session";
 interface UserProps {
   user: User;
   sessionData: Session | null;
+  textHome?: string;
 }
 
-const SignButton = ({ user, sessionData }: UserProps) => {
+const SignButton = ({ user, sessionData, textHome }: UserProps) => {
   const [opentMenuAvata, setOpenMenuAvata] = useState(false);
   const pathname = usePathname();
   const isLogged = !!(sessionData?.user && user);
@@ -53,7 +54,7 @@ const SignButton = ({ user, sessionData }: UserProps) => {
         <>
           <Link href={loginUrl}>
             <Button
-              className="dark:text-slate-200 text-salte-900"
+              className={`dark:text-slate-200 text-salte-900 ${textHome}`}
               variant="link"
             >
               Login
@@ -61,7 +62,7 @@ const SignButton = ({ user, sessionData }: UserProps) => {
           </Link>
           <Link href="/auth/register">
             <Button
-              className="dark:text-slate-200 text-salte-900"
+              className={`dark:text-slate-200 text-salte-900 ${textHome}`}
               variant="link"
             >
               Register
@@ -84,14 +85,20 @@ const SignButton = ({ user, sessionData }: UserProps) => {
                     )}
                   </Avatar>
                   <div className="flex items-center">
-                    <p className="line-clamp-1 w-full max-w-24 truncate">
+                    <p
+                      className={`line-clamp-1 w-full max-w-24 truncate ${textHome}`}
+                    >
                       {user.name}
                     </p>
-                    {opentMenuAvata ? <ChevronUp /> : <ChevronDown />}
+                    {opentMenuAvata ? (
+                      <ChevronUp className={`${textHome}`} />
+                    ) : (
+                      <ChevronDown className={`${textHome}`} />
+                    )}
                   </div>
                 </div>
               </PopoverTrigger>
-              <PopoverContent className="w-screen md:w-60 max-w-none mt-[19px] p-0 overflow-hidden">
+              <PopoverContent className="w-screen md:w-60 max-w-none mt-2 p-0 overflow-hidden">
                 <div>
                   <InformationAvata handleLogout={handleLogout} />
                 </div>

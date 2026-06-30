@@ -2,6 +2,9 @@ import Navbar from "@/components/navbar";
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import NavbarSub from "@/components/navbar/navsub";
+import { Toaster } from "react-hot-toast";
+import { TooltipProvider } from "@/components/ui/tooltip"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,10 +31,17 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <Navbar />
-        <div className="mt-20">
-          {children}
+        <Toaster
+          position="top-right"
+          toastOptions={{
+            duration: 3000,
+          }}
+        />
+        <div className="fixed top-0 z-50 w-full">
+          <Navbar />
+          <NavbarSub />
         </div>
+        <div> <TooltipProvider>{children}</TooltipProvider></div>
       </body>
     </html>
   );
