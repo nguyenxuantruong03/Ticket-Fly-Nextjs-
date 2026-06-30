@@ -1,5 +1,7 @@
+import SearchType from "@/components/search_types/search_type";
+
 const Yacht = () => {
-  return <div>Yacht</div>;
+  return <SearchType type="yacht" />;
 };
 
 export default Yacht;

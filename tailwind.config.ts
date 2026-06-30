@@ -14,6 +14,7 @@ export default {
         custom: {
           root: "oklch(77.7% 0.152 181.912)",
 		      darkroot: "oklch(50.8% 0.118 165.612)",
+          darkroot_RGBA: "rgba(0, 211, 189, 0.1)",
           primary: "#1E90FF",
           secondary: "#FF6347",
           text: "#000000",
